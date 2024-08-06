@@ -12,7 +12,7 @@ T_TabWidget::T_TabWidget(QWidget* parent)
     QLabel* page1 = new QLabel("新标签页1", this);
     page1->setAlignment(Qt::AlignCenter);
     QFont font = page1->font();
-    font.setPointSize(20);
+    font.setPixelSize(32);
     page1->setFont(font);
     QLabel* page2 = new QLabel("新标签页2", this);
     page2->setFont(font);
@@ -23,7 +23,7 @@ T_TabWidget::T_TabWidget(QWidget* parent)
     QLabel* page4 = new QLabel("新标签页4", this);
     page4->setFont(font);
     page4->setAlignment(Qt::AlignCenter);
-    _tabWidget->addTab(page1, QIcon(":/include/Image/Cirno.jpg"), "新标签页1");
+    _tabWidget->addTab(page1, QIcon(":/Resource/Image/Cirno.jpg"), "新标签页1");
     _tabWidget->addTab(page2, "新标签页2");
     _tabWidget->addTab(page3, "新标签页3");
     _tabWidget->addTab(page4, "新标签页4");

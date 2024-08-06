@@ -1,7 +1,7 @@
 # ElaWidgetTools
 
 ## 简介
-本项目是基于QT-Widget开发的FluentUI风格的组件库，同时提供不限于组件的常用集成功能；目前Main分支支持QT5.15.2及QT6所有版本，推荐版本为QT6.4.3和QT6.6.2；
+本项目是基于QT-Widget开发的FluentUI风格的组件库，同时提供不限于组件的常用集成功能；目前Main分支支持QT5.12以上所有版本，推荐版本为QT6.4.3和QT6.6.2；
 
 ## 重要提示
 该项目目前为试作阶段，暂不接受任何PR！！！感谢您的支持！
@@ -58,7 +58,10 @@
 |ElaMessageBar|弹出式信息栏|支持八方向，锚定位置|
 |ElaMessageButton|弹出信息按钮||
 |ElaPushButton|按钮||
+|ElaPopularCard|热门卡片||
 |ElaProgressBar|进度条||
+|ElaPromotionCard|促销卡片||
+|ElaPromotionView|促销卡片视窗||
 |ElaSwitchButton|切换按钮||
 |ElaSuggestBox|建议搜索框||
 |ElaRadioButton|单选按钮||
@@ -68,6 +71,7 @@
 |ElaTabWidget|选项卡页面|谷歌浏览器风格|
 |ElaToolButton|带下拉菜单的工具按钮||
 |ElaToolBar|工具栏||
+|ElaTheme|主题管理器||
 |ElaReminderCard|带图片的提醒卡片||
 |ElaScrollbar|滚动条||
 |ElaScrollArea|滚动区域|可设置鼠标拖动|

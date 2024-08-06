@@ -7,12 +7,12 @@
 #include <QScroller>
 #include <QVBoxLayout>
 
+#include "ElaBaseListView.h"
 #include "ElaCompactDelegate.h"
 #include "ElaCompactModel.h"
 #include "ElaFooterDelegate.h"
 #include "ElaFooterModel.h"
 #include "ElaInteractiveCard.h"
-#include "ElaListView.h"
 #include "ElaMenu.h"
 #include "ElaNavigationDelegate.h"
 #include "ElaNavigationModel.h"
@@ -22,12 +22,14 @@
 #include "ElaTheme.h"
 #include "private/ElaNavigationBarPrivate.h"
 #include "private/ElaSuggestBoxPrivate.h"
+Q_PROPERTY_CREATE_Q_CPP(ElaNavigationBar, bool, IsTransparent)
 ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     : QWidget{parent}, d_ptr(new ElaNavigationBarPrivate())
 {
     Q_D(ElaNavigationBar);
     d->q_ptr = this;
     setFixedWidth(300);
+    d->_pIsTransparent = true;
     d->_windowLinearGradient = new QLinearGradient(0, 0, width(), height());
     d->_windowLinearGradient->setColorAt(0, ElaThemeColor(ElaThemeType::Light, NavigationBaseStart));
     d->_windowLinearGradient->setColorAt(1, ElaThemeColor(ElaThemeType::Light, NavigationBaseEnd));
@@ -41,6 +43,7 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     connect(d->_navigationView, &ElaNavigationView::navigationClicked, this, [=](const QModelIndex& index) { d->onTreeViewClicked(index); });
 
     d->_navigationSuggestBox = new ElaSuggestBox(this);
+    d->_navigationSuggestBox->setMaximumWidth(300);
     // 搜索跳转
     connect(d->_navigationSuggestBox, &ElaSuggestBox::suggestionClicked, this, [=](QString suggestText, QVariantMap suggestData) {
         ElaNavigationNode* node = nullptr;
@@ -69,7 +72,7 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     connect(d->_userCard, &ElaInteractiveCard::clicked, this, &ElaNavigationBar::userInfoCardClicked);
 
     // 页脚
-    d->_footerView = new ElaListView(this);
+    d->_footerView = new ElaBaseListView(this);
     d->_footerView->setFixedHeight(0);
     d->_footerView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     d->_footerView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -78,7 +81,7 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     d->_footerDelegate = new ElaFooterDelegate(this);
     d->_footerDelegate->setElaListView(d->_footerView);
     d->_footerView->setItemDelegate(d->_footerDelegate);
-    connect(d->_footerView, &ElaListView::clicked, this, [=](const QModelIndex& index) { d->onFooterViewClicked(index); });
+    connect(d->_footerView, &ElaBaseListView::clicked, this, [=](const QModelIndex& index) { d->onFooterViewClicked(index); });
 
     //Maximal导航栏
     d->_maximalWidget = new QWidget(this);
@@ -87,7 +90,7 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     maximalLayout->addWidget(d->_userCard);
     maximalLayout->addSpacing(6);
     maximalLayout->addWidget(d->_navigationSuggestBox);
-    maximalLayout->addSpacing(12);
+    maximalLayout->addSpacing(6);
     maximalLayout->addWidget(d->_navigationView);
     maximalLayout->addWidget(d->_footerView);
 
@@ -96,7 +99,7 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     QVBoxLayout* compactLayout = new QVBoxLayout(d->_compactWidget);
     compactLayout->setContentsMargins(0, 10, 0, 0);
 
-    d->_compactView = new ElaListView(this);
+    d->_compactView = new ElaBaseListView(this);
     d->_compactView->setFixedWidth(40);
     d->_compactView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     d->_compactView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -106,7 +109,7 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
     d->_compactDelegate->setElaListView(d->_compactView);
     d->_compactView->setItemDelegate(d->_compactDelegate);
     compactLayout->addWidget(d->_compactView);
-    connect(d->_compactView, &ElaListView::clicked, this, [=](const QModelIndex& index) { d->onCompactViewClicked(index); });
+    connect(d->_compactView, &ElaBaseListView::clicked, this, [=](const QModelIndex& index) { d->onCompactViewClicked(index); });
     QScroller::grabGesture(d->_compactView->viewport(), QScroller::LeftMouseButtonGesture);
     QScrollerProperties properties = QScroller::scroller(d->_compactView->viewport())->scrollerProperties();
 #if (QT_VERSION < QT_VERSION_CHECK(6, 5, 3))
@@ -129,7 +132,6 @@ ElaNavigationBar::ElaNavigationBar(QWidget* parent)
 
     //主题设置
     connect(eTheme, &ElaTheme::themeModeChanged, d, &ElaNavigationBarPrivate::onThemeChanged);
-    parent->installEventFilter(this);
 }
 
 ElaNavigationBar::~ElaNavigationBar()
@@ -160,7 +162,7 @@ void ElaNavigationBar::setUserInfoCardSubTitle(QString subTitle)
     d->_userCard->setSubTitle(subTitle);
 }
 
-ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addExpanderNode(QString expanderTitle, QString& expanderKey, ElaIconType awesome) const
+ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addExpanderNode(QString expanderTitle, QString& expanderKey, ElaIconType::IconName awesome) const
 {
     ElaNavigationType::NodeOperateReturnType returnType = d_ptr->_navigationModel->addExpanderNode(expanderTitle, expanderKey, awesome);
     if (returnType == ElaNavigationType::Success)
@@ -171,12 +173,12 @@ ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addExpanderNode(QStri
     return returnType;
 }
 
-ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addExpanderNode(QString expanderTitle, QString& expanderKey, QString targetExpanderKey, ElaIconType awesome) const
+ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addExpanderNode(QString expanderTitle, QString& expanderKey, QString targetExpanderKey, ElaIconType::IconName awesome) const
 {
     return d_ptr->_navigationModel->addExpanderNode(expanderTitle, expanderKey, targetExpanderKey, awesome);
 }
 
-ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString pageTitle, QWidget* page, ElaIconType awesome) const
+ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString pageTitle, QWidget* page, ElaIconType::IconName awesome) const
 {
     if (!page)
     {
@@ -197,7 +199,7 @@ ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString p
     return returnType;
 }
 
-ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString pageTitle, QWidget* page, QString targetExpanderKey, ElaIconType awesome) const
+ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString pageTitle, QWidget* page, QString targetExpanderKey, ElaIconType::IconName awesome) const
 {
     if (!page)
     {
@@ -235,7 +237,7 @@ ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString p
     return returnType;
 }
 
-ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString pageTitle, QWidget* page, int keyPoints, ElaIconType awesome) const
+ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString pageTitle, QWidget* page, int keyPoints, ElaIconType::IconName awesome) const
 {
     if (!page)
     {
@@ -256,7 +258,7 @@ ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString p
     return returnType;
 }
 
-ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString pageTitle, QWidget* page, QString targetExpanderKey, int keyPoints, ElaIconType awesome) const
+ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString pageTitle, QWidget* page, QString targetExpanderKey, int keyPoints, ElaIconType::IconName awesome) const
 {
     if (!page)
     {
@@ -294,12 +296,12 @@ ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addPageNode(QString p
     return returnType;
 }
 
-ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addFooterNode(QString footerTitle, QString& footerKey, int keyPoints, ElaIconType awesome) const
+ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addFooterNode(QString footerTitle, QString& footerKey, int keyPoints, ElaIconType::IconName awesome) const
 {
     return addFooterNode(footerTitle, nullptr, footerKey, keyPoints, awesome);
 }
 
-ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addFooterNode(QString footerTitle, QWidget* page, QString& footerKey, int keyPoints, ElaIconType awesome) const
+ElaNavigationType::NodeOperateReturnType ElaNavigationBar::addFooterNode(QString footerTitle, QWidget* page, QString& footerKey, int keyPoints, ElaIconType::IconName awesome) const
 {
     ElaNavigationType::NodeOperateReturnType returnType = d_ptr->_footerModel->addFooterNode(footerTitle, footerKey, page ? true : false, keyPoints, awesome);
     if (returnType == ElaNavigationType::Success)
@@ -466,7 +468,14 @@ void ElaNavigationBar::paintEvent(QPaintEvent* event)
     QPainter painter(this);
     painter.save();
     painter.setPen(Qt::NoPen);
-    painter.setBrush(*d->_windowLinearGradient);
+    if (d->_pIsTransparent)
+    {
+        painter.setBrush(Qt::transparent);
+    }
+    else
+    {
+        painter.setBrush(*d->_windowLinearGradient);
+    }
     painter.drawRoundedRect(rect(), 8, 8);
     painter.restore();
     QWidget::paintEvent(event);
