@@ -26,28 +26,16 @@ void ElaWindowStyle::drawPrimitive(PrimitiveElement element, const QStyleOption*
     {
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
-        painter->setPen(Qt::NoPen);
+        painter->setPen(QPen(ElaThemeColor(_themeMode, WindowBaseLine), 2));
         QRectF handleRect = option->rect;
-        if (option->state.testFlag(QStyle::State_MouseOver))
+        if (option->state.testFlag(QStyle::State_Horizontal))
         {
-            painter->setBrush(ElaThemeColor(_themeMode, WindowDockWidgetResizeHandleHover));
+            painter->drawLine(handleRect.x(), handleRect.center().y(), handleRect.right(), handleRect.center().y());
         }
         else
         {
-            auto center = handleRect.center();
-            if(handleRect.width() < handleRect.height()) {
-                handleRect.setWidth(handleRect.width() - 3);
-                handleRect.setHeight(handleRect.height() + 1);
-            }
-            else {
-                handleRect.setHeight(handleRect.height() - 3);
-                handleRect.setWidth(handleRect.width() + 1);
-            }
-            handleRect.moveCenter(center);
-            painter->setBrush(ElaThemeColor(_themeMode, WindowDockWidgetResizeHandle));
+            painter->drawLine(handleRect.center().x(), handleRect.y(), handleRect.center().x(), handleRect.bottom());
         }
-
-        painter->drawRect(handleRect);
         painter->restore();
         return;
     }
@@ -106,7 +94,7 @@ void ElaWindowStyle::drawControl(ControlElement element, const QStyleOption* opt
             if (topt->position != QStyleOptionTab::End)
             {
                 painter->setPen(Qt::NoPen);
-                painter->setBrush(ElaThemeColor(_themeMode, windowTabBarSeparator));
+                painter->setBrush(ElaThemeColor(_themeMode, WindowTabBarSeparator));
                 painter->drawRoundedRect(QRectF(tabRect.right() - 3, tabRect.y() + 7, 3, tabRect.height() - 14), 2, 2);
             }
             painter->restore();

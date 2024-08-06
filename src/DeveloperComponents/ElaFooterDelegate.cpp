@@ -4,12 +4,12 @@
 #include <QPainterPath>
 #include <QPropertyAnimation>
 
+#include "ElaBaseListView.h"
 #include "ElaFooterModel.h"
-#include "ElaListView.h"
 #include "ElaNavigationNode.h"
 #include "ElaTheme.h"
 #include "private/ElaFooterDelegatePrivate.h"
-Q_PRIVATE_CREATE_Q_CPP(ElaFooterDelegate, ElaListView*, ElaListView);
+Q_PRIVATE_CREATE_Q_CPP(ElaFooterDelegate, ElaBaseListView*, ElaListView);
 ElaFooterDelegate::ElaFooterDelegate(QObject* parent)
     : QStyledItemDelegate{parent}, d_ptr(new ElaFooterDelegatePrivate())
 {
@@ -27,44 +27,44 @@ ElaFooterDelegate::ElaFooterDelegate(QObject* parent)
     // Mark向上
     d->_lastSelectMarkTopAnimation = new QPropertyAnimation(this, "lastSelectMarkTop");
     connect(d->_lastSelectMarkTopAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
-                d->_lastSelectMarkTop = value.toReal();
-                d->_pElaListView->viewport()->update(); });
+		d->_lastSelectMarkTop = value.toReal();
+		d->_pElaListView->viewport()->update(); });
     d->_lastSelectMarkTopAnimation->setDuration(300);
     d->_lastSelectMarkTopAnimation->setEasingCurve(QEasingCurve::InOutSine);
 
     d->_selectMarkBottomAnimation = new QPropertyAnimation(this, "selectMarkBottom");
     connect(d->_selectMarkBottomAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
-                d->_selectMarkBottom = value.toReal();
-                d->_pElaListView->viewport()->update(); });
+		d->_selectMarkBottom = value.toReal();
+		d->_pElaListView->viewport()->update(); });
     d->_selectMarkBottomAnimation->setDuration(300);
     d->_selectMarkBottomAnimation->setEasingCurve(QEasingCurve::InOutSine);
     connect(d->_lastSelectMarkTopAnimation, &QPropertyAnimation::finished, this, [=]() {
-                d->_isSelectMarkDisplay = true;
-                d->_lastSelectedNode = nullptr;
-                d->_selectMarkBottomAnimation->setStartValue(0);
-                d->_selectMarkBottomAnimation->setEndValue(10);
-                d->_selectMarkBottomAnimation->start(); });
+		d->_isSelectMarkDisplay = true;
+		d->_lastSelectedNode = nullptr;
+		d->_selectMarkBottomAnimation->setStartValue(0);
+		d->_selectMarkBottomAnimation->setEndValue(10);
+		d->_selectMarkBottomAnimation->start(); });
 
     // Mark向下
     d->_lastSelectMarkBottomAnimation = new QPropertyAnimation(this, "lastSelectMarkBottom");
     connect(d->_lastSelectMarkBottomAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
-                d->_lastSelectMarkBottom =  value.toReal();
-                d->_pElaListView->viewport()->update(); });
+		d->_lastSelectMarkBottom = value.toReal();
+		d->_pElaListView->viewport()->update(); });
     d->_lastSelectMarkBottomAnimation->setDuration(300);
     d->_lastSelectMarkBottomAnimation->setEasingCurve(QEasingCurve::InOutSine);
 
     d->_selectMarkTopAnimation = new QPropertyAnimation(this, "selectMarkTop");
     connect(d->_selectMarkTopAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
-                d->_selectMarkTop =  value.toReal();
-                d->_pElaListView->viewport()->update(); });
+		d->_selectMarkTop = value.toReal();
+		d->_pElaListView->viewport()->update(); });
     d->_selectMarkTopAnimation->setDuration(300);
     d->_selectMarkTopAnimation->setEasingCurve(QEasingCurve::InOutSine);
     connect(d->_lastSelectMarkBottomAnimation, &QPropertyAnimation::finished, this, [=]() {
-                d->_isSelectMarkDisplay = true;
-                d->_lastSelectedNode = nullptr;
-                d->_selectMarkTopAnimation->setStartValue(0);
-                d->_selectMarkTopAnimation->setEndValue(10);
-                d->_selectMarkTopAnimation->start(); });
+		d->_isSelectMarkDisplay = true;
+		d->_lastSelectedNode = nullptr;
+		d->_selectMarkTopAnimation->setStartValue(0);
+		d->_selectMarkTopAnimation->setEndValue(10);
+		d->_selectMarkTopAnimation->start(); });
 }
 
 ElaFooterDelegate::~ElaFooterDelegate()
@@ -155,16 +155,18 @@ void ElaFooterDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     if (index.row() == 0)
     {
         painter->setPen(ElaThemeColor(d->_themeMode, NavigationFooterBaseLine));
-        painter->drawLine(itemRect.x(), itemRect.y() + 1, itemRect.x() + itemRect.width(), itemRect.y() + 1);
+        painter->drawLine(option.rect.x(), itemRect.y() + 1, option.rect.x() + option.rect.width(), itemRect.y() + 1);
     }
     // 图标绘制
     painter->setPen(ElaThemeColor(d->_themeMode, WindowText));
     if (node->getAwesome() != ElaIconType::None)
     {
+        painter->save();
         QFont iconFont = QFont("ElaAwesome");
         iconFont.setPixelSize(17);
         painter->setFont(iconFont);
         painter->drawText(itemRect.x() + 11, itemRect.y() + 26, QChar((unsigned short)node->getAwesome()));
+        painter->restore();
     }
     // 展开图标 KeyPoints
     if (node->getIsExpanderNode())
@@ -204,7 +206,7 @@ void ElaFooterDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
             painter->setBrush(ElaThemeColor(d->_themeMode, NavigationKeyPointCenter));
             painter->drawEllipse(QPoint(255, itemRect.y() + itemRect.height() / 2), 9, 9);
             painter->setPen(QPen(ElaThemeColor(d->_themeMode, NavigationKeyPointText), 2));
-            QFont font = QFont("Microsoft YaHei", 10);
+            QFont font = QFont("Microsoft YaHei");
             font.setHintingPreference(QFont::PreferNoHinting);
             font.setBold(true);
             if (keyPoints > 99)
@@ -226,9 +228,6 @@ void ElaFooterDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     }
 
     // 文字绘制
-    QFont titlefont("Microsoft YaHei", 10);
-    titlefont.setHintingPreference(QFont::PreferNoHinting);
-    painter->setFont(titlefont);
     painter->setPen(ElaThemeColor(d->_themeMode, WindowText));
     painter->drawText(itemRect.x() + 37, itemRect.y() + 25, node->getNodeTitle());
     // 选中特效

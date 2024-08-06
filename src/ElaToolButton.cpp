@@ -9,6 +9,7 @@ ElaToolButton::ElaToolButton(QWidget* parent)
 {
     Q_D(ElaToolButton);
     d->q_ptr = this;
+    setIconSize(QSize(22, 22));
     setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     setPopupMode(QToolButton::InstantPopup);
     setStyle(new ElaToolButtonStyle(style()));
@@ -28,7 +29,7 @@ void ElaToolButton::setMenu(ElaMenu* menu)
     QToolButton::setMenu(menu);
 }
 
-void ElaToolButton::setElaIcon(ElaIconType icon)
+void ElaToolButton::setElaIcon(ElaIconType::IconName icon)
 {
     setProperty("ElaIconType", QChar((unsigned short)icon));
     setIcon(ElaIcon::getInstance()->getElaIcon(ElaIconType::Broom, 1));

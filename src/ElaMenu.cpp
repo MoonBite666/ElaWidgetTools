@@ -24,16 +24,9 @@ ElaMenu::ElaMenu(QWidget* parent)
 }
 
 ElaMenu::ElaMenu(const QString& title, QWidget* parent)
-    : QMenu(title, parent), d_ptr(new ElaMenuPrivate())
+    : ElaMenu(parent)
 {
-    Q_D(ElaMenu);
-    d->q_ptr = this;
-    setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
-    setAttribute(Qt::WA_TranslucentBackground);
-    setObjectName("ElaMenu");
-    d->_menuStyle = new ElaMenuStyle(style());
-    setStyle(d->_menuStyle);
-    d->_pAnimationImagePosY = 0;
+    setTitle(title);
 }
 
 ElaMenu::~ElaMenu()
@@ -72,7 +65,7 @@ ElaMenu* ElaMenu::addMenu(const QIcon& icon, const QString& title)
     return menu;
 }
 
-ElaMenu* ElaMenu::addMenu(ElaIconType icon, const QString& title)
+ElaMenu* ElaMenu::addMenu(ElaIconType::IconName icon, const QString& title)
 {
     ElaMenu* menu = new ElaMenu(title, this);
     QMenu::addAction(menu->menuAction());
@@ -80,14 +73,7 @@ ElaMenu* ElaMenu::addMenu(ElaIconType icon, const QString& title)
     return menu;
 }
 
-QAction* ElaMenu::addElaIconAction(ElaIconType icon, QAction* action)
-{
-    action->setProperty("ElaIconType", QChar((unsigned short)icon));
-    QMenu::addAction(action);
-    return action;
-}
-
-QAction* ElaMenu::addElaIconAction(ElaIconType icon, const QString& text)
+QAction* ElaMenu::addElaIconAction(ElaIconType::IconName icon, const QString& text)
 {
     QAction* action = new QAction(text, this);
     action->setProperty("ElaIconType", QChar((unsigned short)icon));
@@ -95,7 +81,7 @@ QAction* ElaMenu::addElaIconAction(ElaIconType icon, const QString& text)
     return action;
 }
 
-QAction* ElaMenu::addElaIconAction(ElaIconType icon, const QString& text, const QKeySequence& shortcut)
+QAction* ElaMenu::addElaIconAction(ElaIconType::IconName icon, const QString& text, const QKeySequence& shortcut)
 {
     QAction* action = new QAction(text, this);
     action->setShortcut(shortcut);
